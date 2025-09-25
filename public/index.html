@@ -1,0 +1,803 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>สั่งอาหาร - Shabu</title>
+  
+  <!-- iOS/PWA basics -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0b0b0d">
+  
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --primary: #3b82f6;
+      --primary-dark: #1d4ed8;
+      --secondary: #8b5cf6;
+      --success: #10b981;
+      --danger: #ef4444;
+      --background: #0a0a0a;
+      --surface: #1a1a1a;
+      --surface-light: #2a2a2a;
+      --text: #ffffff;
+      --text-muted: #94a3b8;
+      --border: rgba(255, 255, 255, 0.1);
+      --glow: rgba(59, 130, 246, 0.3);
+    }
+
+    body {
+      background: linear-gradient(135deg, var(--background) 0%, #1a1a1a 100%);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+      min-height: 100vh;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    /* Glass Header */
+    .glass-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(15, 15, 15, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding-top: env(safe-area-inset-top);
+    }
+
+    .nav-wrap {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .title {
+      font-size: 24px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .table-chip {
+      background: linear-gradient(135deg, var(--success), #059669);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      animation: pulse-glow 2s infinite;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 10px rgba(16, 185, 129, 0.3); }
+      50% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.6); }
+    }
+
+    .chip {
+      background: linear-gradient(135deg, var(--surface), var(--surface-light));
+      color: var(--text);
+      text-decoration: none;
+      padding: 10px 16px;
+      border-radius: 50px;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .chip:hover {
+      transform: translateY(-2px);
+      border-color: var(--primary);
+      box-shadow: 0 8px 25px var(--glow);
+    }
+
+    /* Main Content */
+    .page {
+      margin-top: 80px;
+      margin-bottom: 100px;
+      padding: 0 20px;
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .section {
+      margin-bottom: 32px;
+    }
+
+    .sec-title {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sec-title::before {
+      content: '✨';
+      font-size: 24px;
+    }
+
+    /* Glass Card */
+    .glass-card {
+      background: linear-gradient(135deg, rgba(26, 26, 26, 0.8) 0%, rgba(42, 42, 42, 0.6) 100%);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glass-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--primary), transparent);
+    }
+
+    /* Search Input */
+    .input.ios {
+      width: 100%;
+      background: rgba(15, 15, 15, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 20px;
+      font-size: 16px;
+      color: var(--text);
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .input.ios:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 20px var(--glow);
+      transform: scale(1.02);
+    }
+
+    .input.ios::placeholder {
+      color: var(--text-muted);
+    }
+
+    /* Menu Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .menu-item {
+      background: linear-gradient(135deg, var(--surface) 0%, var(--surface-light) 100%);
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .menu-item:hover {
+      transform: translateY(-8px) scale(1.02);
+      border-color: var(--primary);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 30px var(--glow);
+    }
+
+    .menu-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+
+    .menu-item:hover::before {
+      transform: scaleX(1);
+    }
+
+    .menu-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .menu-item:hover .menu-image {
+      transform: scale(1.1);
+    }
+
+    .menu-content {
+      padding: 20px;
+      position: relative;
+    }
+
+    .menu-name {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .menu-category {
+      background: rgba(59, 130, 246, 0.1);
+      color: var(--primary);
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      display: inline-block;
+      margin-bottom: 12px;
+    }
+
+    .menu-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .quantity-control {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(15, 15, 15, 0.5);
+      border-radius: 50px;
+      padding: 8px;
+    }
+
+    .qty-btn {
+      width: 36px;
+      height: 36px;
+      border: none;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qty-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 15px var(--glow);
+    }
+
+    .qty-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .qty-display {
+      min-width: 40px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 16px;
+      color: var(--text);
+    }
+
+    /* Glass Footer */
+    .glass-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(15, 15, 15, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      padding: 16px 20px;
+      padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    }
+
+    .footer-wrap {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      gap: 16px;
+    }
+
+    .cart-info {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cart-info::before {
+      content: '🛒';
+      font-size: 20px;
+    }
+
+    .btn.ios {
+      background: linear-gradient(135deg, var(--success), #059669);
+      color: white;
+      border: none;
+      padding: 16px 32px;
+      border-radius: 50px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      min-width: 140px;
+    }
+
+    .btn.ios::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .btn.ios:hover::before {
+      left: 100%;
+    }
+
+    .btn.ios:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn.ios:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* No items placeholder */
+    .no-items {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    .no-items i {
+      font-size: 64px;
+      margin-bottom: 20px;
+      opacity: 0.3;
+    }
+
+    /* Loading state */
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 60px;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(59, 130, 246, 0.3);
+      border-radius: 50%;
+      border-top-color: var(--primary);
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Mobile optimizations */
+    @media (max-width: 768px) {
+      .page {
+        padding: 0 16px;
+        margin-top: 90px;
+      }
+
+      .grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 16px;
+      }
+
+      .nav-wrap, .footer-wrap {
+        padding: 12px 16px;
+      }
+
+      .title {
+        font-size: 20px;
+      }
+
+      .menu-item {
+        border-radius: 16px;
+      }
+
+      .menu-content {
+        padding: 16px;
+      }
+
+      .quantity-control {
+        gap: 8px;
+      }
+
+      .qty-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+      }
+    }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      background: linear-gradient(135deg, var(--success), #059669);
+      color: white;
+      padding: 16px 24px;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+    }
+
+    .toast.show {
+      transform: translateX(0);
+    }
+
+    /* Pulse animation for cart */
+    .cart-pulse {
+      animation: cart-pulse 0.6s ease;
+    }
+
+    @keyframes cart-pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+    }
+
+    .empty-state i {
+      font-size: 80px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      opacity: 0.5;
+    }
+
+    .empty-state h3 {
+      font-size: 24px;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .empty-state p {
+      color: var(--text-muted);
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Glass Header -->
+  <header class="glass-nav">
+    <div class="nav-wrap">
+      <h1 class="title">🍲 Shabu <span class="table-chip" id="tableLabel"></span></h1>
+      <a class="chip" href="/admin/">
+        <i class="fas fa-cog"></i>
+        หลังบ้าน
+      </a>
+    </div>
+  </header>
+
+  <!-- Page -->
+  <main class="page">
+    <div class="section">
+      <div class="glass-card">
+        <input id="search" class="input ios" placeholder="🔍 ค้นหาเมนู…">
+      </div>
+    </div>
+
+    <div class="section">
+      <h3 class="sec-title">เมนู</h3>
+      <div id="menuGrid" class="grid">
+        <div class="loading">
+          <div class="loading-spinner"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Glass Cart -->
+  <footer class="glass-footer">
+    <div class="footer-wrap">
+      <div id="cartInfo" class="cart-info">ตะกร้า: 0 รายการ</div>
+      <button id="submitBtn" class="btn ios" disabled>
+        <i class="fas fa-paper-plane"></i>
+        ส่งเข้าครัว
+      </button>
+    </div>
+  </footer>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    // Global state
+    let cart = {};
+    let menuItems = [];
+    let filteredItems = [];
+
+    // DOM elements
+    const menuGrid = document.getElementById('menuGrid');
+    const cartInfo = document.getElementById('cartInfo');
+    const submitBtn = document.getElementById('submitBtn');
+    const searchInput = document.getElementById('search');
+    const tableLabel = document.getElementById('tableLabel');
+
+    // Initialize
+    async function init() {
+      await loadMenu();
+      setupEventListeners();
+      updateCartDisplay();
+      setTableNumber();
+    }
+
+    // Set table number from URL or prompt
+    function setTableNumber() {
+      const urlParams = new URLSearchParams(window.location.search);
+      let table = urlParams.get('table') || localStorage.getItem('tableNumber');
+      
+      if (!table) {
+        table = prompt('กรุณาใส่หมายเลขโต๊ะ:');
+        if (table) {
+          localStorage.setItem('tableNumber', table);
+        }
+      }
+      
+      if (table) {
+        tableLabel.textContent = `โต๊ะ ${table}`;
+      }
+    }
+
+    // Load menu from API
+    async function loadMenu() {
+      try {
+        const response = await fetch('/api/menu');
+        const data = await response.json();
+        menuItems = data.items || [];
+        filteredItems = [...menuItems];
+        renderMenu();
+      } catch (error) {
+        console.error('Error loading menu:', error);
+        showEmptyState('ไม่สามารถโหลดเมนูได้');
+      }
+    }
+
+    // Render menu items
+    function renderMenu() {
+      if (filteredItems.length === 0) {
+        showEmptyState('ไม่พบเมนูที่ค้นหา');
+        return;
+      }
+
+      menuGrid.innerHTML = filteredItems.map(item => `
+        <div class="menu-item" onclick="addToCart('${item.name}')">
+          <div style="position: relative; overflow: hidden;">
+            ${item.image ? 
+              `<img src="${item.image}" alt="${item.name}" class="menu-image">` :
+              `<div class="menu-image" style="background: linear-gradient(135deg, #1e293b, #334155); display: flex; align-items: center; justify-content: center;"><i class="fas fa-utensils" style="font-size: 48px; color: #64748b;"></i></div>`
+            }
+          </div>
+          <div class="menu-content">
+            <h4 class="menu-name">${item.name}</h4>
+            ${item.category ? `<div class="menu-category">${item.category}</div>` : ''}
+            <div class="menu-actions">
+              <div class="quantity-control">
+                <button class="qty-btn" onclick="event.stopPropagation(); decreaseQuantity('${item.name}')" ${!cart[item.name] ? 'disabled' : ''}>
+                  <i class="fas fa-minus"></i>
+                </button>
+                <span class="qty-display">${cart[item.name] || 0}</span>
+                <button class="qty-btn" onclick="event.stopPropagation(); addToCart('${item.name}')">
+                  <i class="fas fa-plus"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Show empty state
+    function showEmptyState(message) {
+      menuGrid.innerHTML = `
+        <div class="empty-state" style="grid-column: 1 / -1;">
+          <i class="fas fa-utensils"></i>
+          <h3>ไม่พบเมนู</h3>
+          <p>${message}</p>
+        </div>
+      `;
+    }
+
+    // Add item to cart
+    function addToCart(itemName) {
+      cart[itemName] = (cart[itemName] || 0) + 1;
+      updateCartDisplay();
+      renderMenu();
+      showToast(`เพิ่ม ${itemName} แล้ว!`);
+      
+      // Add pulse animation to cart
+      cartInfo.classList.add('cart-pulse');
+      setTimeout(() => cartInfo.classList.remove('cart-pulse'), 600);
+    }
+
+    // Decrease quantity
+    function decreaseQuantity(itemName) {
+      if (cart[itemName] > 0) {
+        cart[itemName]--;
+        if (cart[itemName] === 0) {
+          delete cart[itemName];
+        }
+        updateCartDisplay();
+        renderMenu();
+      }
+    }
+
+    // Update cart display
+    function updateCartDisplay() {
+      const totalItems = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+      cartInfo.innerHTML = `🛒 ตะกร้า: ${totalItems} รายการ`;
+      
+      submitBtn.disabled = totalItems === 0;
+      if (totalItems > 0) {
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> ส่งเข้าครัว';
+      } else {
+        submitBtn.innerHTML = '<i class="fas fa-shopping-cart"></i> เลือกเมนู';
+      }
+    }
+
+    // Setup event listeners
+    function setupEventListeners() {
+      // Search functionality
+      searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        filteredItems = menuItems.filter(item => 
+          item.name.toLowerCase().includes(query) ||
+          (item.category && item.category.toLowerCase().includes(query))
+        );
+        renderMenu();
+      });
+
+      // Submit order
+      submitBtn.addEventListener('click', submitOrder);
+    }
+
+    // Submit order
+    async function submitOrder() {
+      const tableNumber = localStorage.getItem('tableNumber');
+      if (!tableNumber) {
+        alert('กรุณาระบุหมายเลขโต๊ะ');
+        return;
+      }
+
+      if (Object.keys(cart).length === 0) {
+        alert('กรุณาเลือกเมนูก่อน');
+        return;
+      }
+
+      const orderItems = Object.entries(cart).map(([name, qty]) => {
+        const item = menuItems.find(i => i.name === name);
+        return {
+          name,
+          qty,
+          category: item?.category || ''
+        };
+      });
+
+      const order = {
+        table: tableNumber,
+        items: orderItems,
+        note: ''
+      };
+
+      try {
+        submitBtn.innerHTML = '<div class="loading-spinner" style="width: 20px; height: 20px; border-width: 2px;"></div> กำลังส่ง...';
+        submitBtn.disabled = true;
+
+        const response = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(order)
+        });
+
+        const result = await response.json();
+        
+        if (result.ok) {
+          cart = {};
+          updateCartDisplay();
+          renderMenu();
+          showToast('✅ ส่งออเดอร์เรียบร้อยแล้ว!');
+        } else {
+          throw new Error(result.error || 'ส่งออเดอร์ไม่สำเร็จ');
+        }
+      } catch (error) {
+        console.error('Error submitting order:', error);
+        alert('เกิดข้อผิดพลาด: ' + error.message);
+      } finally {
+        updateCartDisplay();
+      }
+    }
+
+    // Show toast notification
+    function showToast(message) {
+      const existingToast = document.querySelector('.toast');
+      if (existingToast) {
+        existingToast.remove();
+      }
+
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      setTimeout(() => toast.classList.add('show'), 100);
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // Initialize app
+    init();
+
+    // Socket.IO for real-time updates
+    if (typeof io !== 'undefined') {
+      const socket = io();
+      socket.on('menu-updated', () => {
+        loadMenu();
+      });
+    }
+  </script>
+</body>
+</html>

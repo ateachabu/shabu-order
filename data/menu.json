@@ -1,0 +1,24 @@
+{
+  "categories": [
+    {
+      "name": "หมู",
+      "printer": "EPSON"
+    },
+    {
+      "name": "ทะเล",
+      "printer": "XPRINTER"
+    }
+  ],
+  "items": [
+    {
+      "name": "3ชั้น",
+      "category": "หมู",
+      "image": "/uploads/1758699996870-mvj0yl.jpg"
+    },
+    {
+      "name": "กุ้งสด",
+      "category": "ทะเล",
+      "image": "/uploads/1758700495185-xpaakl.jpg"
+    }
+  ]
+}

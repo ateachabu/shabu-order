@@ -1,0 +1,681 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>หลังบ้าน - Shabu</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css" />
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+      color: #ffffff;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
+      padding: 24px 32px;
+      border-radius: 20px;
+      margin-bottom: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+    }
+
+    .header h2 {
+      font-size: 28px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #60a5fa, #a78bfa);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header h2::before {
+      content: '🍲';
+      font-size: 32px;
+      -webkit-text-fill-color: initial;
+    }
+
+    .badge {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+    }
+
+    .badge::after {
+      content: '→';
+      transition: transform 0.3s ease;
+    }
+
+    .badge:hover::after {
+      transform: translateX(4px);
+    }
+
+    .card {
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      border-radius: 20px;
+      padding: 28px;
+      margin-bottom: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.5), transparent);
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+      border-color: rgba(96, 165, 250, 0.3);
+    }
+
+    .card h3 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .row {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .btn:hover::before {
+      left: 100%;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-sm {
+      padding: 10px 18px;
+      font-size: 13px;
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+
+    .btn-danger:hover {
+      box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #10b981, #059669);
+    }
+
+    .btn-success:hover {
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    }
+
+    .input, select {
+      background: rgba(15, 23, 42, 0.8);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .input:focus, select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+    }
+
+    input[type="file"] {
+      background: rgba(15, 23, 42, 0.8);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 8px;
+      cursor: pointer;
+    }
+
+    input[type="file"]::-webkit-file-upload-button {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      margin-right: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    input[type="file"]::-webkit-file-upload-button:hover {
+      transform: translateY(-1px);
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+    }
+
+    .table th {
+      background: linear-gradient(135deg, #1e293b, #334155);
+      color: #f8fafc;
+      padding: 16px 12px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .table td {
+      padding: 16px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      transition: background-color 0.3s ease;
+    }
+
+    .table tbody tr:hover {
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    img.thumb {
+      width: 64px;
+      height: 64px;
+      object-fit: cover;
+      border-radius: 12px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    img.thumb:hover {
+      transform: scale(1.1);
+      border-color: rgba(96, 165, 250, 0.5);
+    }
+
+    .orders {
+      display: grid;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .order {
+      background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .order::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(135deg, #10b981, #059669);
+    }
+
+    .order:hover {
+      transform: translateX(8px);
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .order b {
+      color: #60a5fa;
+      font-size: 18px;
+    }
+
+    .print-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .print-btn {
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+
+    .print-btn:hover {
+      box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+    }
+
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      display: inline-block;
+      margin-right: 8px;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      align-items: end;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 16px;
+      }
+
+      .header {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+      }
+
+      .card {
+        padding: 20px;
+      }
+
+      .row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #ffffff;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>หลังบ้าน</h2>
+      <a class="badge" href="/">
+        <i class="fas fa-external-link-alt"></i>
+        หน้าลูกค้า
+      </a>
+    </div>
+
+    <div class="card">
+      <h3>
+        <i class="fas fa-print"></i>
+        ทดสอบพิมพ์
+      </h3>
+      <div class="print-section">
+        <button id="printTest" class="btn print-btn">
+          <i class="fas fa-print"></i>
+          พิมพ์ทดสอบ Epson
+        </button>
+        <button id="printTestX" class="btn print-btn">
+          <i class="fas fa-print"></i>
+          พิมพ์ทดสอบ XPrinter
+        </button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>
+        <i class="fas fa-tags"></i>
+        หมวดหมู่ (+/−) และเลือกเครื่องพิมพ์
+      </h3>
+      <div class="form-row">
+        <div class="form-group">
+          <input class="input" id="catName" placeholder="ชื่อหมวด เช่น เนื้อสัตว์" />
+        </div>
+        <div class="form-group">
+          <select id="catPrinter">
+            <option value="EPSON">🖨️ Epson</option>
+            <option value="XPRINTER">🖨️ XPrinter</option>
+          </select>
+        </div>
+        <button id="addCat" class="btn btn-success">
+          <i class="fas fa-plus"></i>
+          เพิ่มหมวด
+        </button>
+      </div>
+      <table class="table" id="catTable">
+        <thead>
+          <tr>
+            <th><i class="fas fa-tag"></i> ชื่อหมวด</th>
+            <th><i class="fas fa-print"></i> เครื่องพิมพ์</th>
+            <th><i class="fas fa-trash"></i> ลบ</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>
+        <i class="fas fa-utensils"></i>
+        เมนู (+/−) อัปโหลดรูป
+      </h3>
+      <form id="addItemForm" enctype="multipart/form-data">
+        <div class="form-row">
+          <div class="form-group">
+            <input class="input" name="name" placeholder="ชื่อเมนู" required />
+          </div>
+          <div class="form-group">
+            <select name="category" id="itemCategory" required>
+              <option value="">เลือกหมวดหมู่</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <input type="file" name="image" accept="image/*" />
+          </div>
+          <button class="btn btn-success" type="submit">
+            <i class="fas fa-plus"></i>
+            เพิ่มเมนู
+          </button>
+        </div>
+      </form>
+      <table class="table" id="itemTable" style="margin-top: 24px;">
+        <thead>
+          <tr>
+            <th><i class="fas fa-image"></i> รูป</th>
+            <th><i class="fas fa-utensils"></i> ชื่อเมนู</th>
+            <th><i class="fas fa-tag"></i> หมวด</th>
+            <th><i class="fas fa-trash"></i> ลบ</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>
+        <i class="fas fa-receipt"></i>
+        ออเดอร์ล่าสุด
+        <span class="status-indicator"></span>
+      </h3>
+      <div id="orders" class="orders"></div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const ordersEl = document.getElementById('orders');
+    const catTbody = document.querySelector('#catTable tbody');
+    const itemTbody = document.querySelector('#itemTable tbody');
+    const itemCategory = document.getElementById('itemCategory');
+
+    async function loadMenu(){
+      const res = await fetch('/api/menu');
+      const data = await res.json();
+      renderCats(data.categories);
+      renderItems(data.items);
+    }
+
+    function renderCats(cats){
+      catTbody.innerHTML = '';
+      itemCategory.innerHTML = '<option value="">เลือกหมวดหมู่</option>';
+      cats.forEach(c => {
+        // row for cat table
+        const tr = document.createElement('tr');
+        const nameTd = document.createElement('td');
+        const input = document.createElement('input');
+        input.className = 'input'; input.style.maxWidth='220px'; input.value = c.name;
+        nameTd.appendChild(input);
+        const printerTd = document.createElement('td');
+        const sel = document.createElement('select');
+        sel.className = 'input';
+        sel.innerHTML = '<option value="EPSON">🖨️ Epson</option><option value="XPRINTER">🖨️ XPrinter</option>';
+        sel.value = c.printer || 'EPSON';
+        printerTd.appendChild(sel);
+        const delTd = document.createElement('td');
+        const delBtn = document.createElement('button');
+        delBtn.className='btn btn-sm btn-danger'; 
+        delBtn.innerHTML = '<i class="fas fa-trash"></i> ลบ';
+        delTd.appendChild(delBtn);
+        tr.appendChild(nameTd); tr.appendChild(printerTd); tr.appendChild(delTd);
+        catTbody.appendChild(tr);
+
+        // change handlers
+        input.onchange = async ()=>{
+          const body = { oldName: c.name, name: input.value.trim() };
+          await fetch('/api/categories', { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+          await loadMenu();
+        };
+        sel.onchange = async ()=>{
+          const body = { oldName: input.value.trim(), printer: sel.value };
+          await fetch('/api/categories', { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+          await loadMenu();
+        };
+        delBtn.onclick = async ()=>{
+          if (!confirm('ลบหมวดนี้?')) return;
+          await fetch('/api/categories', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name: input.value.trim() })});
+          await loadMenu();
+        };
+
+        // option for add-item
+        const opt = document.createElement('option');
+        opt.value = c.name; opt.textContent = c.name;
+        itemCategory.appendChild(opt);
+      });
+    }
+
+    async function renderItems(list){
+      itemTbody.innerHTML = '';
+      list.forEach(it => {
+        const tr = document.createElement('tr');
+        const imgTd = document.createElement('td');
+        imgTd.innerHTML = it.image ? '<img class="thumb" src="'+it.image+'" />' : '<i class="fas fa-image" style="color: #64748b; font-size: 24px;"></i>';
+        const nameTd = document.createElement('td'); nameTd.textContent = it.name;
+        const catTd = document.createElement('td'); 
+        catTd.innerHTML = it.category ? '<span style="background: rgba(59, 130, 246, 0.1); color: #60a5fa; padding: 4px 8px; border-radius: 6px; font-size: 12px;">' + it.category + '</span>' : '';
+        const delTd = document.createElement('td');
+        const delBtn = document.createElement('button'); 
+        delBtn.className='btn btn-sm btn-danger'; 
+        delBtn.innerHTML = '<i class="fas fa-trash"></i> ลบ';
+        delTd.appendChild(delBtn);
+        tr.appendChild(imgTd); tr.appendChild(nameTd); tr.appendChild(catTd); tr.appendChild(delTd);
+        itemTbody.appendChild(tr);
+        delBtn.onclick = async ()=>{
+          if (!confirm('ลบเมนูนี้?')) return;
+          await fetch('/api/items', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name: it.name })});
+          await loadMenu();
+        };
+      });
+    }
+
+    document.getElementById('addCat').onclick = async ()=>{
+      const name = document.getElementById('catName').value.trim();
+      const printer = document.getElementById('catPrinter').value;
+      if (!name) return alert('ใส่ชื่อหมวดก่อน');
+      const res = await fetch('/api/categories', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name, printer })});
+      const data = await res.json();
+      if (!data.ok && data.error) return alert(data.error);
+      document.getElementById('catName').value = '';
+      await loadMenu();
+    };
+
+    document.getElementById('addItemForm').onsubmit = async (e)=>{
+      e.preventDefault();
+      const form = e.currentTarget;
+      const fd = new FormData(form);
+      const res = await fetch('/api/items', { method:'POST', body: fd });
+      const data = await res.json();
+      if (!data.ok && data.error) return alert(data.error);
+      form.reset();
+      await loadMenu();
+    };
+
+    async function refreshOrders(){
+      const res = await fetch('/api/orders');
+      const list = await res.json();
+      ordersEl.innerHTML='';
+      if (list.length === 0) {
+        ordersEl.innerHTML = '<div style="text-align: center; color: #64748b; padding: 40px;"><i class="fas fa-receipt" style="font-size: 48px; margin-bottom: 16px;"></i><br>ยังไม่มีออเดอร์</div>';
+        return;
+      }
+      list.forEach(o => {
+        const div = document.createElement('div');
+        div.className = 'order';
+        const items = o.items.map(i => `<div style="margin: 4px 0;"><i class="fas fa-utensils" style="color: #60a5fa; margin-right: 8px;"></i>x${i.qty} ${i.name} ${i.category? '<span style="color: #a78bfa;">('+i.category+')</span>':''}</div>`).join('');
+        div.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <b style="font-size: 20px;"><i class="fas fa-hashtag"></i> ${o.orderId}</b>
+            <span style="color: #64748b; font-size: 14px;"><i class="fas fa-clock"></i> ${new Date(o.ts).toLocaleTimeString()}</span>
+          </div>
+          <div style="margin-bottom: 12px;"><i class="fas fa-table" style="color: #10b981; margin-right: 8px;"></i>โต๊ะ ${o.table || '-'}</div>
+          <div style="border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 12px; margin-top: 12px;">${items}</div>
+          ${o.note?'<div style="margin-top: 12px; padding: 8px; background: rgba(167, 139, 250, 0.1); border-radius: 8px; font-style: italic; color: #a78bfa;"><i class="fas fa-sticky-note"></i> หมายเหตุ: '+o.note+'</div>':''}
+        `;
+        ordersEl.appendChild(div);
+      });
+    }
+
+    // Test prints
+    document.getElementById('printTest').onclick = async ()=>{
+      const btn = document.getElementById('printTest');
+      btn.innerHTML = '<span class="loading"></span> กำลังพิมพ์...';
+      btn.disabled = true;
+      const res = await fetch('/api/print-test', { method:'POST' });
+      const data = await res.json();
+      btn.innerHTML = '<i class="fas fa-print"></i> พิมพ์ทดสอบ Epson';
+      btn.disabled = false;
+      alert(data.ok? '✅ พิมพ์แล้ว (Epson)': ('❌ ' + (data.error||'ไม่สำเร็จ')));
+    };
+    
+    document.getElementById('printTestX').onclick = async ()=>{
+      const btn = document.getElementById('printTestX');
+      btn.innerHTML = '<span class="loading"></span> กำลังพิมพ์...';
+      btn.disabled = true;
+      const res = await fetch('/api/print-test-xprinter', { method:'POST' });
+      const data = await res.json();
+      btn.innerHTML = '<i class="fas fa-print"></i> พิมพ์ทดสอบ XPrinter';
+      btn.disabled = false;
+      alert(data.ok? '✅ พิมพ์แล้ว (XPrinter)': ('❌ ' + (data.error||'ไม่สำเร็จ')));
+    };
+
+    const socket = io();
+    socket.on('new-order', () => { 
+      refreshOrders(); 
+      // Show notification
+      if (Notification.permission === 'granted') {
+        new Notification('🍲 ออเดอร์ใหม่เข้ามาแล้ว!', {
+          icon: '/favicon.ico',
+          body: 'มีออเดอร์ใหม่เข้ามา กรุณาตรวจสอบ'
+        });
+      }
+    });
+
+    // Request notification permission
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
+    loadMenu();
+    refreshOrders();
+  </script>
+</body>
+</html>
