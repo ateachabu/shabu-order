@@ -562,7 +562,7 @@
     </div>
   </footer>
 
-  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script>
     // Global state
     let cart = {};
@@ -793,7 +793,7 @@
 
     // Socket.IO for real-time updates
     if (typeof io !== 'undefined') {
-      const socket = io();
+      const socket = io({ path: '/socket' });
       socket.on('menu-updated', () => {
         loadMenu();
       });
