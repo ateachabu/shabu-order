@@ -501,7 +501,7 @@
     </div>
   </div>
 
-  <script src="/socket.io/socket.io.js"></script>
+ <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script>
     const ordersEl = document.getElementById('orders');
     const catTbody = document.querySelector('#catTable tbody');
@@ -657,7 +657,7 @@
       alert(data.ok? '✅ พิมพ์แล้ว (XPrinter)': ('❌ ' + (data.error||'ไม่สำเร็จ')));
     };
 
-    const socket = io();
+const socket = io({ path: '/socket' });
     socket.on('new-order', () => { 
       refreshOrders(); 
       // Show notification
