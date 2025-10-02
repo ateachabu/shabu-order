@@ -1,161 +1,294 @@
-// server.js - Final version with CORS, socket.io path, QR fix, and admin serving
 import express from 'express';
-import http from 'http';
-import { Server as SocketIOServer } from 'socket.io';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import dotenv from 'dotenv';
-import QRCode from 'qrcode';
-import multer from 'multer';
-import cors from 'cors';
-import fs from 'fs';
-
-// MongoDB imports
-import database from './config/database.js';
-import { Category, MenuItem, Order } from './models/schemas.js';
-
-dotenv.config();
+import fs from 'fs/promises';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const server = http.createServer(app);
+const server = createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
+});
 
-// Allow origin ทั้ง localhost และ production
-const allowedOrigins = [
-  "http://localhost:4000",
-  "https://www.chabuhida.com"
+const PORT = process.env.PORT || 3000;
+
+// Middleware
+app.use(express.json());
+app.use(express.static('public'));
+
+// In-memory storage (ในการใช้งานจริงควรใช้ database)
+let menuItems = [
+  {
+    id: 1,
+    name: "เนื้อวัวสไลด์",
+    category: "เนื้อ",
+    image: null,
+    available: true
+  },
+  {
+    id: 2,
+    name: "หมูสไลด์",
+    category: "หมู",
+    image: null,
+    available: true
+  },
+  {
+    id: 3,
+    name: "กุ้งสด",
+    category: "ทะเล",
+    image: null,
+    available: true
+  },
+  {
+    id: 4,
+    name: "ปลาหมึก",
+    category: "ทะเล",
+    image: null,
+    available: true
+  },
+  {
+    id: 5,
+    name: "ผักรวม",
+    category: "ผัก",
+    image: null,
+    available: true
+  },
+  {
+    id: 6,
+    name: "เห็ดรวม",
+    category: "ผัก",
+    image: null,
+    available: true
+  },
+  {
+    id: 7,
+    name: "เส้นอุด้ง",
+    category: "เส้น",
+    image: null,
+    available: true
+  },
+  {
+    id: 8,
+    name: "เส้นบะหมี่",
+    category: "เส้น",
+    image: null,
+    available: true
+  }
 ];
 
-app.use(cors({ origin: allowedOrigins, credentials: true }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+let orders = [];
+let orderIdCounter = 1;
 
-// Static files
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
-app.use(express.static(path.join(__dirname, 'public')));
+// Routes
 
-// Socket.IO
-const io = new SocketIOServer(server, {
-  path: "/socket",
-  cors: { origin: allowedOrigins, credentials: true }
+// Serve main page
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'uploads', 'index.html'));
 });
-app.set("trust proxy", 1);
 
-// Upload storage
-const uploadsDir = path.join(__dirname, 'public/uploads');
-if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadsDir),
-  filename: (req, file, cb) => {
-    const ext = (file.originalname || '').split('.').pop();
-    const safe = Date.now() + '-' + Math.random().toString(36).slice(2,8) + (ext?'.'+ext.toLowerCase():'');
-    cb(null, safe);
-  }
-});
-const upload = multer({ storage });
-
-// ---------------- API ----------------
-app.get('/api/health', async (req, res) => {
+// Get menu items
+app.get('/api/menu', (req, res) => {
   try {
-    const dbHealth = await database.healthCheck();
-    res.json({ status: 'ok', timestamp: new Date().toISOString(), database: dbHealth });
-  } catch (error) {
-    res.status(500).json({ status: 'error', database: { healthy: false, message: error.message }});
-  }
-});
-
-// Example: menu API
-app.get('/api/menu', async (req, res) => {
-  try {
-    const categories = await Category.find({ active: true }).sort({ name: 1 });
-    const items = await MenuItem.find({ active: true }).sort({ category: 1, name: 1 });
     res.json({
-      categories: categories.map(c => ({ name: c.name, printer: c.printer })),
-      items: items.map(i => ({
-        name: i.name,
-        category: i.category,
-        image: i.image,
-        price: i.price,
-        description: i.description
-      }))
+      ok: true,
+      items: menuItems.filter(item => item.available)
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error fetching menu:', error);
+    res.status(500).json({
+      ok: false,
+      error: 'ไม่สามารถโหลดเมนูได้'
+    });
   }
 });
 
-// Print test → emit ให้ print-service พิมพ์
-app.post('/api/print-test', (req, res) => {
-  const payload = {
-    orderId: `TEST-${Date.now().toString().slice(-6)}`,
-    table: 'TEST',
-    note: 'ทดสอบจาก /api/print-test',
-    items: [ { name: 'เนื้อออสเตรเลีย', qty: 2, category: 'หมู' }, { name: 'กุ้ง', qty: 1, category: 'ทะเล' } ]
-  };
-  io.emit('new-order', payload);
-  res.json({ ok: true, sent: true });
-});
-
-app.post('/api/print-test-xprinter', (req, res) => {
-  const payload = {
-    orderId: `TESTX-${Date.now().toString().slice(-6)}`,
-    table: 'TEST-X',
-    note: 'ทดสอบจาก /api/print-test-xprinter',
-    items: [ { name: 'หมูสไลซ์', qty: 2, category: 'หมู' }, { name: 'ปลาหมึก', qty: 1, category: 'ทะเล' } ]
-  };
-  io.emit('new-order', payload);
-  res.json({ ok: true, sent: true });
-});
-
-// QR generator (fix proto behind proxy)
-app.get('/api/qr', async (req, res) => {
+// Submit order
+app.post('/api/orders', (req, res) => {
   try {
-    const { table = '1' } = req.query;
-    const proto = (req.headers["x-forwarded-proto"] || req.protocol);
-    const host  = req.get("host");
-    const url   = `${proto}://${host}/?table=${encodeURIComponent(table)}`;
-    const png = await QRCode.toBuffer(url, { errorCorrectionLevel: 'M', width: 600 });
-    res.setHeader('Content-Type', 'image/png');
-    res.send(png);
-  } catch (error) { res.status(500).json({ error: error.message }); }
-});
+    const { table, items, note } = req.body;
 
-// ---------------- Pages ----------------
-app.get('/admin/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/admin.html'));
-});
-
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/index.html'));
-});
-
-// ---------------- Start Server ----------------
-async function startServer() {
-  try {
-    await database.connect();
-    if (database.initializeDefaultData && typeof database.initializeDefaultData === 'function') {
-      await database.initializeDefaultData();
+    // Validation
+    if (!table) {
+      return res.status(400).json({
+        ok: false,
+        error: 'กรุณาระบุหมายเลขโต๊ะ'
+      });
     }
 
-    const PORT = process.env.PORT || 4000;
-    server.listen(PORT, () => {
-      console.log(`🍲 Shabu System running on http://localhost:${PORT}`);
-      console.log(`📱 Customer: http://localhost:${PORT}`);
-      console.log(`⚙️  Admin: http://localhost:${PORT}/admin/`);
-      console.log(`🏥 Health: http://localhost:${PORT}/api/health`);
-    });
+    if (!items || items.length === 0) {
+      return res.status(400).json({
+        ok: false,
+        error: 'กรุณาเลือกเมนูอย่างน้อย 1 รายการ'
+      });
+    }
 
-    io.on('connection', (socket) => {
-      console.log('👤 Client connected:', socket.id);
-      socket.on('disconnect', () => console.log('👤 Client disconnected:', socket.id));
+    // Create order
+    const order = {
+      id: orderIdCounter++,
+      table: table,
+      items: items,
+      note: note || '',
+      status: 'pending',
+      timestamp: new Date().toISOString(),
+      totalItems: items.reduce((sum, item) => sum + item.qty, 0)
+    };
+
+    orders.push(order);
+
+    // Emit to all connected clients (for admin dashboard)
+    io.emit('new-order', order);
+
+    console.log(`📋 ออเดอร์ใหม่ - โต๊ะ ${table}:`, items.map(i => `${i.name} x${i.qty}`).join(', '));
+
+    res.json({
+      ok: true,
+      orderId: order.id,
+      message: 'ส่งออเดอร์เรียบร้อยแล้ว'
     });
 
   } catch (error) {
-    console.error('❌ Failed to start server:', error.message);
-    process.exit(1);
+    console.error('Error submitting order:', error);
+    res.status(500).json({
+      ok: false,
+      error: 'เกิดข้อผิดพลาดในการส่งออเดอร์'
+    });
   }
-}
+});
 
-startServer();
+// Get all orders (for admin)
+app.get('/api/orders', (req, res) => {
+  try {
+    res.json({
+      ok: true,
+      orders: orders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+    });
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    res.status(500).json({
+      ok: false,
+      error: 'ไม่สามารถโหลดออเดอร์ได้'
+    });
+  }
+});
+
+// Update order status
+app.patch('/api/orders/:id', (req, res) => {
+  try {
+    const orderId = parseInt(req.params.id);
+    const { status } = req.body;
+    
+    const order = orders.find(o => o.id === orderId);
+    if (!order) {
+      return res.status(404).json({
+        ok: false,
+        error: 'ไม่พบออเดอร์'
+      });
+    }
+
+    order.status = status;
+    order.updatedAt = new Date().toISOString();
+
+    // Emit status update
+    io.emit('order-status-updated', { orderId, status });
+
+    res.json({
+      ok: true,
+      message: 'อัปเดตสถานะเรียบร้อยแล้ว'
+    });
+
+  } catch (error) {
+    console.error('Error updating order:', error);
+    res.status(500).json({
+      ok: false,
+      error: 'ไม่สามารถอัปเดตสถานะได้'
+    });
+  }
+});
+
+// Add menu item (for admin)
+app.post('/api/menu', (req, res) => {
+  try {
+    const { name, category, image } = req.body;
+    
+    if (!name) {
+      return res.status(400).json({
+        ok: false,
+        error: 'กรุณาระบุชื่อเมนู'
+      });
+    }
+
+    const newItem = {
+      id: Math.max(...menuItems.map(i => i.id), 0) + 1,
+      name,
+      category: category || '',
+      image: image || null,
+      available: true
+    };
+
+    menuItems.push(newItem);
+
+    // Emit menu update
+    io.emit('menu-updated');
+
+    res.json({
+      ok: true,
+      item: newItem,
+      message: 'เพิ่มเมนูเรียบร้อยแล้ว'
+    });
+
+  } catch (error) {
+    console.error('Error adding menu item:', error);
+    res.status(500).json({
+      ok: false,
+      error: 'ไม่สามารถเพิ่มเมนูได้'
+    });
+  }
+});
+
+// Socket.IO connection handling
+io.on('connection', (socket) => {
+  console.log('👤 Client connected:', socket.id);
+
+  socket.on('disconnect', () => {
+    console.log('👋 Client disconnected:', socket.id);
+  });
+
+  // Join admin room
+  socket.on('join-admin', () => {
+    socket.join('admin');
+    console.log('🔧 Admin joined:', socket.id);
+  });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Server error:', err);
+  res.status(500).json({
+    ok: false,
+    error: 'เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์'
+  });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    ok: false,
+    error: 'ไม่พบหน้าที่ต้องการ'
+  });
+});
+
+// Start server
+server.listen(PORT, () => {
+  console.log(`🍲 Shabu Order System running on port ${PORT}`);
+  console.log(`📱 Frontend: http://localhost:${PORT}`);
+  console.log(`🔧 API: http://localhost:${PORT}/api`);
+});
+
+export default app;
